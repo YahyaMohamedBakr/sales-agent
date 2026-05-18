@@ -18,8 +18,8 @@ return new class extends Migration
             $table->foreignUuid('campaign_id')->nullable()->constrained()->nullOnDelete();
             $table->integer('score')->default(0);
             $table->string('status')->default('new');
-            $table->foreignUuid('assigned_to')->nullable()->constrained('users')->nullOnDelete();
-            $table->jsonb('metadata')->nullable();
+            $table->foreignId('assigned_to')->nullable()->constrained('users')->nullOnDelete();
+            $table->json('metadata')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

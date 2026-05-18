@@ -8,14 +8,12 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('campaigns', function (Blueprint $table) {
+        Schema::create('agent_configs', function (Blueprint $table) {
             $table->uuid('id')->primary();
+            $table->string('agent_type');
             $table->string('name');
-            $table->string('meta_ad_id')->nullable()->unique();
-            $table->string('status')->default('draft');
-            $table->string('platform')->default('facebook');
-            $table->string('page_id')->nullable();
-            $table->jsonb('metadata')->nullable();
+            $table->json('config');
+            $table->boolean('active')->default(true);
             $table->softDeletes();
             $table->timestamps();
         });
@@ -23,6 +21,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('campaigns');
+        Schema::dropIfExists('agent_configs');
     }
 };

@@ -8,13 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('conversations', function (Blueprint $table) {
+        Schema::create('integrations', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->foreignUuid('lead_id')->constrained()->cascadeOnDelete();
-            $table->string('channel');
-            $table->text('message');
-            $table->string('direction');
-            $table->jsonb('metadata')->nullable();
+            $table->string('platform');
+            $table->text('credentials');
+            $table->text('webhook_secret')->nullable();
+            $table->boolean('active')->default(false);
+            $table->json('metadata')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });
@@ -22,6 +22,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('conversations');
+        Schema::dropIfExists('integrations');
     }
 };

@@ -8,12 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('agent_configs', function (Blueprint $table) {
+        Schema::create('conversations', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('agent_type');
-            $table->string('name');
-            $table->jsonb('config');
-            $table->boolean('active')->default(true);
+            $table->foreignUuid('lead_id')->constrained()->cascadeOnDelete();
+            $table->string('channel');
+            $table->text('message');
+            $table->string('direction');
+            $table->json('metadata')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });
@@ -21,6 +22,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('agent_configs');
+        Schema::dropIfExists('conversations');
     }
 };

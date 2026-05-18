@@ -28,7 +28,7 @@ class AuthController extends Controller
 
         return back()->withErrors([
             'email' => 'بيانات الدخول غير صحيحة.',
-        ])->only('email');
+        ])->withInput();
     }
 
     public function logout(Request $request)

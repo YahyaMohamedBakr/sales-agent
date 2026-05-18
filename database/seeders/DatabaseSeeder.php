@@ -16,4 +16,3 @@ class DatabaseSeeder extends Seeder
         ]);
     }
 }
-}

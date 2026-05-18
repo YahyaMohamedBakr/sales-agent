@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('model_used')->nullable();
             $table->integer('tokens_used')->nullable();
             $table->integer('processing_time_ms')->nullable();
-            $table->jsonb('metadata')->nullable();
+            $table->json('metadata')->nullable();
             $table->timestamps();
         });
     }
