@@ -11,6 +11,12 @@ class LeadApiTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->authenticate();
+    }
+
     public function test_lists_leads(): void
     {
         Lead::factory()->count(3)->create();

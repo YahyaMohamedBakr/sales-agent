@@ -9,6 +9,12 @@ class AgentApiTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->authenticate();
+    }
+
     public function test_health_endpoint_returns_available_providers(): void
     {
         $response = $this->getJson('/api/agent/health');

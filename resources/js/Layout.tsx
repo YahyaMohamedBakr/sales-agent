@@ -1,5 +1,15 @@
-import { Link, usePage } from '@inertiajs/react'
+import { Link, usePage, router } from '@inertiajs/react'
 import { useState } from 'react'
+
+interface PageProps {
+    auth?: {
+        user?: {
+            id: string
+            name: string
+            email: string
+        } | null
+    }
+}
 
 const nav = [
     { name: 'Dashboard', href: '/dashboard', icon: '📊' },
@@ -12,7 +22,8 @@ const nav = [
 
 export default function Layout({ children }: { children: React.ReactNode }) {
     const [sidebarOpen, setSidebarOpen] = useState(false)
-    const url = usePage().url
+    const { url, props } = usePage<PageProps>()
+    const user = props.auth?.user
 
     return (
         <div className="flex h-screen bg-gray-50">
@@ -62,6 +73,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     </button>
                     <div className="flex-1" />
                     <div className="flex items-center gap-3">
+                        {user && (
+                            <div className="flex items-center gap-3">
+                                <span className="text-sm text-gray-700">{user.name}</span>
+                                <button
+                                    onClick={() => router.post('/logout')}
+                                    className="text-sm text-red-500 hover:text-red-700 transition-colors"
+                                >
+                                    تسجيل خروج
+                                </button>
+                            </div>
+                        )}
                         <span className="text-sm text-gray-500">AI Sales Agent v1</span>
                     </div>
                 </header>

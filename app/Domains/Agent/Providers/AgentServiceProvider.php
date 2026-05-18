@@ -8,11 +8,15 @@ use App\Domains\Agent\Agents\LeadQualifierAgent;
 use App\Domains\Agent\Agents\SupportAgent;
 use App\Domains\Integration\Services\EmailService;
 use App\Domains\Agent\AIProviders\AnthropicProvider;
+use App\Domains\Agent\AIProviders\CohereProvider;
+use App\Domains\Agent\AIProviders\DeepSeekProvider;
 use App\Domains\Agent\AIProviders\GoogleProvider;
 use App\Domains\Agent\AIProviders\GroqProvider;
+use App\Domains\Agent\AIProviders\MistralProvider;
 use App\Domains\Agent\AIProviders\OllamaProvider;
 use App\Domains\Agent\AIProviders\OpenAIProvider;
 use App\Domains\Agent\AIProviders\OpenRouterProvider;
+use App\Domains\Agent\AIProviders\TogetherProvider;
 use App\Domains\Agent\AIProviders\ZenProvider;
 use App\Domains\Agent\Contracts\AIProviderInterface;
 use App\Domains\Agent\Contracts\SmartRouterInterface;
@@ -103,6 +107,10 @@ class AgentServiceProvider extends ServiceProvider
             AIProviderEnum::Groq->value => GroqProvider::class,
             AIProviderEnum::Ollama->value => OllamaProvider::class,
             AIProviderEnum::OpenRouter->value => OpenRouterProvider::class,
+            AIProviderEnum::Mistral->value => MistralProvider::class,
+            AIProviderEnum::DeepSeek->value => DeepSeekProvider::class,
+            AIProviderEnum::Together->value => TogetherProvider::class,
+            AIProviderEnum::Cohere->value => CohereProvider::class,
             AIProviderEnum::Zen->value => ZenProvider::class,
         ];
 
