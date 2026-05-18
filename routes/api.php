@@ -34,6 +34,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('analytics/top-campaigns', [AnalyticsController::class, 'topCampaigns']);
     Route::get('analytics/agent-performance', [AnalyticsController::class, 'agentPerformance']);
 
+    Route::get('settings', [\App\Http\Controllers\Api\SettingsController::class, 'index']);
+    Route::put('settings', [\App\Http\Controllers\Api\SettingsController::class, 'update']);
+
     Route::post('tokens', [TokenController::class, 'store']);
     Route::delete('tokens/{id}', [TokenController::class, 'destroy']);
 });

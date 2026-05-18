@@ -90,6 +90,7 @@ return [
         ],
 
         'ollama' => [
+            'api_key' => env('OLLAMA_API_KEY'),
             'base_url' => env('OLLAMA_URL', 'http://localhost:11434'),
         ],
 

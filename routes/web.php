@@ -34,4 +34,5 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/agent', fn () => Inertia::render('Agent/Monitoring'));
     Route::get('/analytics', fn () => Inertia::render('Analytics/Index'));
     Route::get('/knowledge-base', fn () => Inertia::render('KnowledgeBase/Index'));
+    Route::get('/settings', fn () => Inertia::render('Settings/Index'));
 });

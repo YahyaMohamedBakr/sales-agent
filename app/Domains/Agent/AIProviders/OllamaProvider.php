@@ -13,10 +13,12 @@ use Illuminate\Support\Facades\Log;
 class OllamaProvider extends BaseProvider
 {
     private string $baseUrl;
+    private ?string $apiKey;
 
     public function __construct()
     {
         $this->baseUrl = config('agent.providers.ollama.base_url', env('OLLAMA_URL', 'http://localhost:11434'));
+        $this->apiKey = config('agent.providers.ollama.api_key') ?: env('OLLAMA_API_KEY');
     }
 
     public function provider(): AIProvider
@@ -28,6 +30,45 @@ class OllamaProvider extends BaseProvider
     {
         $start = hrtime(true);
 
+        // Use OpenAI-compatible API if key is set (cloud Ollama)
+        if ($this->apiKey) {
+            return $this->chatViaOpenAI($messages, $config, $start);
+        }
+
+        return $this->chatViaNative($messages, $config, $start);
+    }
+
+    private function chatViaOpenAI(array $messages, ModelConfig $config, int $start): AIResponse
+    {
+        $payload = $this->buildChatPayload($messages, $config);
+
+        $response = Http::withToken($this->apiKey)
+            ->timeout(60)
+            ->post("{$this->baseUrl}/v1/chat/completions", $payload);
+
+        $elapsed = (hrtime(true) - $start) / 1_000_000;
+
+        if (!$response->successful()) {
+            $this->trackFailure($response->body());
+            throw new \RuntimeException("Ollama (OpenAI) error: {$response->body()}");
+        }
+
+        $data = $response->json();
+        $this->trackSuccess((int) $elapsed);
+
+        return new AIResponse(
+            content: $data['choices'][0]['message']['content'] ?? '',
+            model: $data['model'] ?? $config->model,
+            provider: $this->provider()->value,
+            inputTokens: $data['usage']['prompt_tokens'] ?? 0,
+            outputTokens: $data['usage']['completion_tokens'] ?? 0,
+            processingTimeMs: (int) $elapsed,
+            finishReason: $data['choices'][0]['finish_reason'] ?? null,
+        );
+    }
+
+    private function chatViaNative(array $messages, ModelConfig $config, int $start): AIResponse
+    {
         $payload = [
             'model' => $config->model,
             'messages' => $messages,
@@ -38,8 +79,13 @@ class OllamaProvider extends BaseProvider
             ],
         ];
 
-        $response = Http::timeout(60)
-            ->post("{$this->baseUrl}/api/chat", $payload);
+        $request = Http::timeout(60);
+
+        if ($this->apiKey) {
+            $request->withToken($this->apiKey);
+        }
+
+        $response = $request->post("{$this->baseUrl}/api/chat", $payload);
 
         $elapsed = (hrtime(true) - $start) / 1_000_000;
 
@@ -76,11 +122,16 @@ class OllamaProvider extends BaseProvider
 
     public function embed(string $text): array
     {
-        $response = Http::timeout(30)
-            ->post("{$this->baseUrl}/api/embeddings", [
-                'model' => 'nomic-embed-text',
-                'prompt' => $text,
-            ]);
+        $request = Http::timeout(30);
+
+        if ($this->apiKey) {
+            $request->withToken($this->apiKey);
+        }
+
+        $response = $request->post("{$this->baseUrl}/api/embeddings", [
+            'model' => 'nomic-embed-text',
+            'prompt' => $text,
+        ]);
 
         if (!$response->successful()) {
             throw new \RuntimeException("Ollama Embedding error: {$response->body()}");
@@ -92,7 +143,13 @@ class OllamaProvider extends BaseProvider
     public function models(): array
     {
         try {
-            $response = Http::timeout(5)->get("{$this->baseUrl}/api/tags");
+            $request = Http::timeout(5);
+
+            if ($this->apiKey) {
+                $request->withToken($this->apiKey);
+            }
+
+            $response = $request->get("{$this->baseUrl}/api/tags");
 
             if (!$response->successful()) return AIProvider::Ollama->availableModels();
 
@@ -109,10 +166,21 @@ class OllamaProvider extends BaseProvider
 
     protected function checkHealth(): ProviderStatus
     {
+        if (!$this->baseUrl || $this->baseUrl === 'http://localhost:11434') {
+            return ProviderStatus::NotConfigured;
+        }
+
         try {
-            $response = Http::timeout(3)->get("{$this->baseUrl}/api/tags");
+            $request = Http::timeout(5);
+
+            if ($this->apiKey) {
+                $request->withToken($this->apiKey);
+            }
+
+            $response = $request->get("{$this->baseUrl}/api/tags");
 
             if ($response->successful()) return ProviderStatus::Active;
+            if ($response->status() === 429) return ProviderStatus::RateLimited;
 
             return ProviderStatus::Unavailable;
         } catch (\Throwable $e) {
@@ -122,11 +190,11 @@ class OllamaProvider extends BaseProvider
 
     protected function getRateLimitPerMinute(): ?int
     {
-        return null; // Local, no rate limit
+        return $this->apiKey ? 60 : null;
     }
 
     protected function getRateLimitPerHour(): ?int
     {
-        return null;
+        return $this->apiKey ? 5000 : null;
     }
 }

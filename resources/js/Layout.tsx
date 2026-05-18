@@ -18,6 +18,7 @@ const nav = [
     { name: 'Agent', href: '/agent', icon: '🤖' },
     { name: 'Analytics', href: '/analytics', icon: '📈' },
     { name: 'Knowledge Base', href: '/knowledge-base', icon: '📚' },
+    { name: 'Settings', href: '/settings', icon: '⚙️' },
 ]
 
 export default function Layout({ children }: { children: React.ReactNode }) {
